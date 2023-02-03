@@ -1,0 +1,43 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+
+  config.vm.define "dc01" do |dc01|
+  
+    # Source box and VM config
+    dc01.vm.box = "server2019_vmware.box"
+    dc01.vm.guest = "windows"
+    dc01.vm.hostname = "DC01"
+
+    # Network config
+    dc01.vm.network :forwarded_port, guest: 3389, host: 3389, id: "rdp", auto_correct: true
+    dc01.vm.network :private_network, ip: "10.1.1.7", gateway: "10.1.1.0"
+
+    # WinRM config
+    dc01.vm.communicator = "winrm"
+    dc01.winrm.transport = :plaintext
+    dc01.winrm.basic_auth_only = true
+    dc01.winrm.username = "vagrant"
+    dc01.winrm.password = "vagrant"
+
+    # VirtualBox config
+    dc01.vm.provider :vmware_workstation do |v|
+      v.gui = true
+      v.linked_clone = true
+      v.cpus = 1
+      v.memory = 2048
+      v.vmx["ethernet0.virtualDev"] = "vmxnet3"
+      v.vmx["RemoteDisplay.vnc.enabled"] = "false"
+      v.vmx["RemoteDisplay.vnc.port"] = "5900"
+      v.vmx["scsi0.virtualDev"] = "lsisas1068"
+      v.enable_vmrun_ip_lookup = false
+      v.whitelist_verified = true
+      v.vmx["hgfs.linkRootShare"] = "FALSE"
+    end
+  end  
+end
